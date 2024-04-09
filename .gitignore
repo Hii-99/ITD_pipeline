@@ -164,3 +164,5 @@ tools/
 data/
 test/
 blueprint.drawio
+tmp/
+tmp*
