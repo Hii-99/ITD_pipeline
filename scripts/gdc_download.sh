@@ -1,34 +1,62 @@
 #!/bin/sh
 
+set -euo pipefail
+
 # Global Variable
-BASHRC= /home/hiiluann99/.bashrc
-OUT_DIR=~/data_10T/
-
-
-
-############### preprocessing ###############
-
+BASHRC=unset
 
 shopt -s expand_aliases
-source $BASHRC
-source banner.sh
+# source $BASHRC
+source template/banner.sh
 
+VERSION=0.1.0
+OUT_DIR=./
+SAMPLE_SHEET=unset
+verbose=false
 
+usage(){
+>&2 cat << EOF
+Usage: $0
+   [ -V | --version ]
+   [ -v | --verbose ]
+   [ -h | --help ]
+   [ -t | --tcga_id  args ]
+   [ -s | --sample_id  args]
+   [ -f | --file_name args ]
+   [ -o | --out_dir args; default=./ ]
+EOF
+}
 
-cwd=$(pwd)
-cd OUT_DIR
+args=$(getopt -a -o Vvhs:o: --long version,verbose,help,sample_sheet:,out_dir: -- "$@")
 
-[[ ! -d "download" ]] && mkdir -p "download"
-[[ ! -d "tmp" ]] && mkdir -p "tmp"
+if [[ $? -gt 0 ]]; then
+  usage
+fi
 
+eval set -- ${args}
+while :
+do
+  case $1 in
+    -V | --version)   echo $VERSION ; exit 1 ;;
+    -v | --verbose)    verbose=true ; shift   ;;
+    -h | --help)    usage ; exit 1 ;;
+    -s | --sample_sheet) SAMPLE_SHEET=$2 ; shift 2;;
+    -o | --out_dir)   OUT_DIR=$2   ; shift 2 ;;
+
+    # -- means the end of the arguments; drop this, and break out of the while loop
+    --) shift; break ;;
+    *) >&2 echo Unsupported option: $1
+       usage ;;
+  esac
+done
 
 gdc_download(){
 
         [[ ! -d "tmp/download" ]] && mkdir -p "tmp/download"
         [[ ! -f  tmp/gdc_download.out ]] && touch tmp/gdc_download.out
-
-        FILE_NAME=${2}
+        
         GDC_ID=${1}
+        FILE_NAME=${2}
         TCGA_ID=${3}
 
         echo "start Downloading WXS BAM files"
@@ -51,40 +79,26 @@ gdc_download(){
 
 }
 
-############### main ##############
+cwd=$(pwd)
 
-# [1]: GDC sample sheet
-
-# Check the number of arguments
-#if [ $# -eq 0 ]; then
-#       echo "No arguments provided."
-#       echo "gdc_download.sh {gdc_sample_sheet.tsv}"
-#       exit
-#fi
-
-
+if [ $verbose = true ]; then   
+   wanglab_banner2
+   >&2 echo "version          : ${VERSION}"
+   >&2 echo "Sample Sheet     : ${SAMPLE_SHEET} "
+   >&2 echo "Output Directory : ${OUT_DIR}"
+fi
 
 # checking file existence
-[[ ! -f $1 ]] && {
-        echo "$sample does not exist"
-        exit
+[[ ! -f $SAMPLE_SHEET ]] && {
+        echo "$SAMPLE_SHEET does not exist"
+        exit 1
 }
 
-# checking bash_script running and lock gdc_download.sh
-if [ ! -f tmp/gdc_download.lock ]
-then echo -e "GDC download script is running on $(date +'%Y%m%d')" >> tmp/gdc_download.lock
-else
-        less tmp/gdc_download.lock | echo
-        exit;
-fi
 # reading sample sheet
-tail -n +2 $1 | while IFS=$'\t' read -r -a sample
+tail -n +2 $SAMPLE_SHEET | while IFS=$'\t' read -r -a sample
 do
         # [0]: file ID
         # [1]: file name
         # [6]: sample ID
         gdc_download ${sample[0]} ${sample[1]} ${sample[6]}
 done
-
-rm tmp/gdc_download.lock
-

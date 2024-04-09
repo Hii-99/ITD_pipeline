@@ -22,7 +22,7 @@ EOF
 exit 1
 }
 
-args=$(getopt -a -o abhc:d: --long alpha,beta,help,gamma:,delta: -- "$@")
+args=$(getopt -a -o abhg:d: --long alpha,beta,help,gamma:,delta: -- "$@")
 if [[ $? -gt 0 ]]; then
   usage
 fi
@@ -34,7 +34,7 @@ do
     -a | --alpha)   alpha=1    ; shift   ;;
     -b | --beta)    beta=1     ; shift   ;;
     -h | --help)    usage      ; shift   ;;
-    -c | --gamma)   gamma=$2   ; shift 2 ;;
+    -g | --gamma)   gamma=$2   ; shift 2 ;;
     -d | --delta)   delta=$2   ; shift 2 ;;
     # -- means the end of the arguments; drop this, and break out of the while loop
     --) shift; break ;;
