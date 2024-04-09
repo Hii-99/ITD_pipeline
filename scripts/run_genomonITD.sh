@@ -81,7 +81,7 @@ fi
 cd $GENOMONITDetector38_DIR
 
 
-./detectITD.sh $bam_file $WORK_DIR ${TCGA_ID}
+./detectITD.sh ${CWD}/${BAM_FILE} ${CWD}/${WORK_DIR} ${TCGA_ID}
 wait # done genomonITD detection
 
 # cleanup
