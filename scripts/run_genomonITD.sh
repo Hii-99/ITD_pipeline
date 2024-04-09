@@ -78,7 +78,7 @@ fi
 # conda activate GENOMON_ITD_ENV
 
 # ITD detection with genomon-ITDetector
-cd GENOMONITDetector38_DIR
+cd $GENOMONITDetector38_DIR
 
 
 ./detectITD.sh $bam_file $WORK_DIR ${TCGA_ID}
