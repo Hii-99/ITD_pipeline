@@ -3,10 +3,11 @@
 set -euo pipefail
 
 # Global Variable
-BASHRC=unset
+BASHRC=~/.bashrc
+
 
 shopt -s expand_aliases
-# source $BASHRC
+source $BASHRC
 source scripts/template/banner.sh
 
 VERSION=0.1.1
@@ -71,7 +72,6 @@ gdc_download(){
         # clean up
         rm -r tmp/download/${GDC_ID}
 
-        echo -e "${GDC_ID}\tdownload/${file_name}.bam\t${TCGA_ID}" >> tmp/gdc_download.out
 
         echo "Done Downloading WXS BAM files"
 
