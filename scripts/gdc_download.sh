@@ -7,7 +7,7 @@ BASHRC=unset
 
 shopt -s expand_aliases
 # source $BASHRC
-source template/banner.sh
+source script/template/banner.sh
 
 VERSION=0.1.0
 OUT_DIR=./
