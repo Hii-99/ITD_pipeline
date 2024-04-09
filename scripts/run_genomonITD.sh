@@ -56,7 +56,7 @@ do
   esac
 done
 
-if [  "$PREFIX" = ""]; then
+if [  "$PREFIX" = "" ]; then
     BAM_FILE=${FILE_NAME}.bam
 else
     BAM_FILE=${PREFIX}/${FILE_NAME}.bam
