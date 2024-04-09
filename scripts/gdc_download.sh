@@ -20,9 +20,7 @@ Usage: $0
    [ -V | --version ]
    [ -v | --verbose ]
    [ -h | --help ]
-   [ -t | --tcga_id  args ]
-   [ -s | --sample_id  args]
-   [ -f | --file_name args ]
+   [ -s | --sample_sheet  args]
    [ -o | --out_dir args; default=./ ]
 EOF
 }
@@ -79,7 +77,6 @@ gdc_download(){
 
 }
 
-cwd=$(pwd)
 
 if [ $verbose = true ]; then   
    wanglab_banner2
