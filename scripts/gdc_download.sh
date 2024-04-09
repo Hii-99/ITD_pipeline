@@ -10,7 +10,7 @@ shopt -s expand_aliases
 source $BASHRC
 source scripts/template/banner.sh
 
-VERSION=0.1.1
+VERSION=0.1.2
 OUT_DIR=./
 SAMPLE_SHEET=unset
 verbose=false
@@ -52,7 +52,6 @@ done
 gdc_download(){
 
         [[ ! -d "tmp/download" ]] && mkdir -p "tmp/download"
-        [[ ! -f  tmp/gdc_download.out ]] && touch tmp/gdc_download.out
         
         GDC_ID=${1}
         FILE_NAME=${2}
@@ -66,8 +65,8 @@ gdc_download(){
         # rename file
 
         file_name=($(echo ${FILE_NAME} | tr "."  ' '))
-        mv tmp/download/${GDC_ID}/${file_name[0]}.bam download/${GDC_ID}.bam
-        mv tmp/download/${GDC_ID}/${file_name[0]}.bai download/${GDC_ID}.bai
+        mv tmp/download/${GDC_ID}/${file_name[0]}.bam ${OUT_DIR}/${GDC_ID}.bam
+        mv tmp/download/${GDC_ID}/${file_name[0]}.bai ${OUT_DIR}/${GDC_ID}.bai
 
         # clean up
         rm -r tmp/download/${GDC_ID}
