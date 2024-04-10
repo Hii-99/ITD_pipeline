@@ -5,9 +5,12 @@ set -euo pipefail
 # Global Variable
 BASHRC=~/.bashrc
 
+
 shopt -s expand_aliases
 source $BASHRC
 source scripts/template/banner.sh
+
+eval "$(conda shell.bash hook)"
 
 VERSION=0.1.1
 GENOMON_ITD_ENV=master-genomonITD
@@ -75,7 +78,7 @@ if [ $verbose = true ]; then
    >&2 echo "Output Directory : ${OUT_DIR}"
 fi
 
-conda activate GENOMON_ITD_ENV
+conda activate $GENOMON_ITD_ENV
 
 # ITD detection with genomon-ITDetector
 cd $GENOMONITDetector38_DIR
