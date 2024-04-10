@@ -9,7 +9,7 @@ shopt -s expand_aliases
 source $BASHRC
 source scripts/template/banner.sh
 
-VERSION=0.1.2
+VERSION=0.1.0
 OUT_DIR=./
 PREFIX=unset
 SAMPLE_SHEET=unset
