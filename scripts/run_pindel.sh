@@ -9,7 +9,9 @@ shopt -s expand_aliases
 source $BASHRC
 source scripts/template/banner.sh
 
-VERSION=0.1.0
+eval "$(conda shell.bash hook)"
+
+VERSION=0.1.1
 THREAD=20
 REF=~/bin/GenomonITDetector38/GRCh38.d1.vd1.fa
 REF_NAME=GRCh38.d1.vd1.fa
@@ -65,6 +67,7 @@ else
     BAM_FILE=${PREFIX}/${FILE_NAME}.bam
 fi
 
+CWD=$(pwd)
 WORK_DIR=`mktemp -d -p "$CWD"`
 
 if [ $verbose = true ]; then   
@@ -88,7 +91,7 @@ if [ ! -f $CONFIG_FILE ]
                 echo "${TCGA_ID}: ${file_ID} done bam config"
         fi
 
-pindel -f $REF -i $CONFIG_FILE -o ${WORK_DIR} -T ${THREAD}
+pindel -f $REF -i $CONFIG_FILE -o ${WORK_DIR}/${FILE_NAME} -T ${THREAD}
 pindel2vcf -p ${WORK_DIR}/${FILE_NAME}_TD -r ${REF} -R ${REF_NAME} -d  $(date +'%Y%m%d') -v ${OUT_DIR}/${FILE_NAME}_TD.vcf &
 pindel2vcf -p ${WORK_DIR}/${FILE_NAME}_SI -r ${REF} -R ${REF_NAME} -d  $(date +'%Y%m%d') -v ${OUT_DIR}/${FILE_NAME}_SI.vcf &
 wait
