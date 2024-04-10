@@ -6,7 +6,7 @@ import re
 from natsort import natsort_keygen
 from template.banner import wanglab_banner
 
-VERSION: str="0.1.0"
+VERSION: str="0.1.1"
 
 POSITION_PATTERN = r"[a-zA-Z0-9_]+):\\+([0-9]+)-([a-zA-Z0-9_]+):\\-([a-zA-Z0-9]+)"
 COL_NAME: list[str] = ["chromosome1", "position1", "chromosome2", "position2", "max_read_counts, sample_ID"]
@@ -20,8 +20,8 @@ def get_parser():
     parser.add_argument('-s', '--SampleSheet', required=True, help="Normal Sample Sheet")
     parser.add_argument('-g', '--genomonITD_dir', required=True, help="path to the directory of genomon-ITD result")
     parser.add_argument('-o', '--output_dir', required=False, default="./", help="the output directory, default is the running directory")
-    parser.add_argument('-V', '--Version', required=False, default=False, help="print out the Version of this program and exit")
-    parser.add_argument('-v', '--verbose', required=False, default=False, help="turn on the verbosity of this program")
+    parser.add_argument('-V', '--Version', action='version', version=VERSION, help="print out the Version of this program and exit")
+    parser.add_argument('-v', '--verbose', action='store_true', required=False, default=False, help="turn on the verbosity of this program")
     return parser
 
 def extract_position(data: pd.DataFrame):
@@ -36,13 +36,11 @@ def max_read_counts(row):
     return int(max(sum([row[1], row[2]]), sum([row[4], row[5]])))
 
 def remove_duplicate(data):
-    data['col5'] = data.groupby(COL_NAME[:4])[COL_NAME[4]].transform(lambda x: ', '.join(map(str, x)))
-    data['col6'] = data.groupby(COL_NAME[:4])[COL_NAME[5]].transform(lambda x: ', '.join(map(str, x)))
+    data[COL_NAME[4]] = data.groupby(COL_NAME[:4])[COL_NAME[4]].transform(lambda x: ', '.join(map(str, x)))
+    data[COL_NAME[5]] = data.groupby(COL_NAME[:4])[COL_NAME[5]].transform(lambda x: ', '.join(map(str, x)))
 
     return data.drop_duplicates(subset=COL_NAME[:4], keep='first')
 
-# Drop duplicate rows based on the first 4 columns
-df = df.drop_duplicates(subset=['col1', 'col2', 'col3', 'col4'], keep='first')
 
 if __name__ == '__main__':
     parser = get_parser()
@@ -53,11 +51,7 @@ if __name__ == '__main__':
     normal_dir = args.genomonITD_dir
     output_dir = args.output_dir
     verbose = args.verbose
-    version = args.Version
-
-    if version:
-        print(F"version: {VERSION}")
-        exit()    
+ 
 
     if verbose:
         wanglab_banner()
