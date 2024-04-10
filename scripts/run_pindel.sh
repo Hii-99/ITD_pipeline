@@ -76,7 +76,17 @@ if [ $verbose = true ]; then
    >&2 echo "Output Directory : ${OUT_DIR}"
 fi
 
-conda activate PINDEL_ENV
+conda activate $PINDEL_ENV
+
+CONFIG_FILE=${WORK_DIR}/${FILE_NAME}_bam_config.txt
+if [ ! -f $CONFIG_FILE ]
+        then
+                touch $CONFIG_FILE
+                echo -e "${BAM_FILE}\t250\t${TCGA_ID}" >> $CONFIG_FILE
+        else
+
+                echo "${TCGA_ID}: ${file_ID} done bam config"
+        fi
 
 pindel -f $REF -i $CONFIG_FILE -o ${WORK_DIR} -T ${THREAD}
 pindel2vcf -p ${WORK_DIR}/${FILE_NAME}_TD -r ${REF} -R ${REF_NAME} -d  $(date +'%Y%m%d') -v ${OUT_DIR}/${FILE_NAME}_TD.vcf &
