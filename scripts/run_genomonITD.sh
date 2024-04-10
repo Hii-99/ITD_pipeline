@@ -3,12 +3,13 @@
 set -euo pipefail
 
 # Global Variable
-BASHRC=unset
+BASHRC=~/.bashrc
 
 shopt -s expand_aliases
-# source $BASHRC
+source $BASHRC
 source scripts/template/banner.sh
-VERSION=0.1.0
+
+VERSION=0.1.1
 GENOMON_ITD_ENV=master-genomonITD
 GENOMONITDetector38_DIR=~/bin/GenomonITDetector38
 FILE_NAME=unset
@@ -74,12 +75,10 @@ if [ $verbose = true ]; then
    >&2 echo "Output Directory : ${OUT_DIR}"
 fi
 
-
-# conda activate GENOMON_ITD_ENV
+conda activate GENOMON_ITD_ENV
 
 # ITD detection with genomon-ITDetector
 cd $GENOMONITDetector38_DIR
-
 
 ./detectITD.sh ${CWD}/${BAM_FILE} ${CWD}/${WORK_DIR} ${TCGA_ID}
 wait # done genomonITD detection

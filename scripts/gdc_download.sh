@@ -5,7 +5,6 @@ set -euo pipefail
 # Global Variable
 BASHRC=~/.bashrc
 
-
 shopt -s expand_aliases
 source $BASHRC
 source scripts/template/banner.sh
