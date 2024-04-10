@@ -85,4 +85,5 @@ do
         -t $TCGA_ID \
         -o $OUT_DIR/genomonITD &
     wait
+
 done
