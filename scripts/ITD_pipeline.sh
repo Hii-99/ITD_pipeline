@@ -51,7 +51,6 @@ do
   esac
 done
 
-
 if [ $verbose = true ]; then   
    wanglab_banner2
    >&2 echo "version          : ${VERSION}"
