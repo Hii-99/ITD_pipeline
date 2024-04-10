@@ -16,7 +16,7 @@ VERSION=0.1.1
 GENOMON_ITD_ENV=master-genomonITD
 GENOMONITDetector38_DIR=~/bin/GenomonITDetector38
 FILE_NAME=unset
-PREFIX=""
+PREFIX=unset
 TCGA_ID=unset
 OUT_DIR=./
 verbose=false
@@ -60,14 +60,14 @@ do
   esac
 done
 
-if [  "$PREFIX" = "" ]; then
+if [  "$PREFIX" = "unset" ]; then
     BAM_FILE=${FILE_NAME}.bam
 else
     BAM_FILE=${PREFIX}/${FILE_NAME}.bam
 fi
 
 CWD=$(pwd)
-WORK_DIR=`mktemp -d -p "$CWD"`
+WORK_DIR=`mktemp -d -p "$CWD"`-t 
 
 if [ $verbose = true ]; then   
    wanglab_banner2
