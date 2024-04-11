@@ -7,7 +7,7 @@ import argparse
 from natsort import natsort_keygen
 from template.banner import wanglab_banner
 
-VERSION: str="0.1.0"
+VERSION: str="0.1.1"
 THRESHOLD=5
 VCF_COLNAME: list[str] = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT', 'SAMPLE']
 TIDY_COLNAME: list[str] = ["CHROM", "Start Position", "ALT", "End Position", "Length", "SV_Type", "HOMSeq", "Read_Counts"]
@@ -141,7 +141,7 @@ Output Directory        : {output_dir}
         g_data = initiatePindel(pd.read_csv(path(tumor_dir,sample+"_tidy.csv"), header=0, index_col=None))
         Pindel = PindelObject(pindel_dir, sample)
 
-        for _, g_row in g_data.iterrows():
+        for i, g_row in g_data.iterrows():
             chrom, s_pos, e_pos, seq = g_row[["chromosome1", "position1", "position2", "observed_inserted_nucleotide"]]
 
             if chrom in Pindel.tidyDict:
@@ -150,21 +150,21 @@ Output Directory        : {output_dir}
             else:
                 continue
 
-            for i, p_row in thisChrPindel.iterrows():
+            for j, p_row in thisChrPindel.iterrows():
                 start_diff: int = abs(int(p_row["Start Position"])-int(s_pos))
                 end_diff: int =  abs(int(p_row["End Position"])-int(e_pos))
                 if start_diff<= THRESHOLD and end_diff<= THRESHOLD:
-                    g_row["Pindel"] = 1
-                    g_row["Pindel_SV_type"] = p_row["SV_Type"]
-                    g_row["Pindel_chr"] = chrom
-                    g_row["Pindel_s_pos"] = p_row["Start Position"]
-                    g_row["Pindel_e_pos"] = p_row["End Position"]
-                    g_row["min_diff"] = max(start_diff, end_diff)
-                    g_row["Sequence"] = p_row["ALT"][-1::-1]
-                    g_row["Pindel_read_counts"] = p_row["Read_Counts"]
-                    g_row["Pindel_length"] = p_row["Length"]
+                    g_data.loc[i,"Pindel"] = 1
+                    g_data.loc[i,"Pindel_SV_type"] = p_row["SV_Type"]
+                    g_data.loc[i,"Pindel_chr"] = chrom
+                    g_data.loc[i,"Pindel_s_pos"] = p_row["Start Position"]
+                    g_data.loc[i,"Pindel_e_pos"] = p_row["End Position"]
+                    g_data.loc[i,"min_diff"] = max(start_diff, end_diff)
+                    g_data.loc[i,"Sequence"] = p_row["ALT"][-1::-1]
+                    g_data.loc[i,"Pindel_read_counts"] = p_row["Read_Counts"]
+                    g_data.loc[i,"Pindel_length"] = p_row["Length"]
 
-                    Pindel.vcf_append(thisChrRaw.iloc[i])
+                    Pindel.vcf_append(thisChrRaw.iloc[j])
                     break
         
         file_name = path(output_dir, sample+".pindel.csv")
