@@ -7,13 +7,13 @@ from template.banner import wanglab_banner
 
 VERSION: str="0.1.1"
 
-POSITION_PATTERN = "([a-zA-Z0-9_]+):\\+([0-9]+)-([a-zA-Z0-9_]+):\\-([a-zA-Z0-9]+)"
+POSITION_PATTERN: str = "([a-zA-Z0-9_]+):\\+([0-9]+)-([a-zA-Z0-9_]+):\\-([a-zA-Z0-9]+)"
 COL_NAME: list[str] = ["chromosome1", "position1", "chromosome2", "position2", "max_read_counts", "sample_ID"]
 
-def path(*args : str):
+def path(*args : str) -> str:
     return "/".join(args)
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser: 
     parser = argparse.ArgumentParser(prog="Normal_Pooling.py",description="Pooling Normal ITD data")
     parser.add_argument('-t', '--TumorType', required=True, help='Tumor Type')
     parser.add_argument('-s', '--SampleSheet', required=True, help="Normal Sample Sheet")
@@ -23,18 +23,18 @@ def get_parser():
     parser.add_argument('-v', '--verbose', action='store_true', required=False, default=False, help="turn on the verbosity of this program")
     return parser
 
-def extract_position(data: pd.DataFrame):
+def extract_position(data: pd.DataFrame) -> pd.DataFrame:
     positions = data.iloc[:,0].map(apply_position_regex).to_list() 
     return pd.DataFrame(positions, columns=COL_NAME[:4])
 
-def apply_position_regex(string: str):
+def apply_position_regex(string: str) -> list[str]:
     result = re.match(POSITION_PATTERN,string) # pattern: chr2, pos2, chr1 , pos1
     return result.group(3), result.group(4), result.group(1), result.group(2) 
 
-def max_read_counts(row):
+def max_read_counts(row) -> int:
     return int(max(sum([row[1], row[2]]), sum([row[4], row[5]])))
 
-def remove_duplicate(data):
+def remove_duplicate(data) -> pd.DataFrame:
     data[COL_NAME[4]] = data.groupby(COL_NAME[:4])[COL_NAME[4]].transform(lambda x: ';'.join(map(str, x)))
     data[COL_NAME[5]] = data.groupby(COL_NAME[:4])[COL_NAME[5]].transform(lambda x: ';'.join(map(str, x)))
 
@@ -84,6 +84,6 @@ Output Directory        : {output_dir}
     data = remove_duplicate(data.sort_values(by="chromosome1", key=natsort_keygen(), ascending=True)).reset_index(drop=True)
 
     for chromosome in set(data.chromosome1):
-        data[data.chromosome1 == chromosome].to_csv(f"{output_dir}/{tumor_type}_Normal_Candidate_{chromosome}.csv")
+        data[data.chromosome1 == chromosome].to_csv(f"{output_dir}/{tumor_type}_Normal_Candidate_{chromosome}.csv", index = None)
     
-    data.to_csv(f"{output_dir}/{tumor_type}_Normal_Candidate.csv")
+    data.to_csv(f"{output_dir}/{tumor_type}_Normal_Candidate.csv", index=None)
