@@ -26,7 +26,7 @@ def get_parser():
 
 def extract_position(data: pd.DataFrame):
     positions = data.iloc[:,0].map(apply_position_regex).to_list() 
-    return pd.DataFrame(positions, columns=COL_NAME[:4])!l
+    return pd.DataFrame(positions, columns=COL_NAME[:4])
 
 def apply_position_regex(string: str):
     result = re.match(POSITION_PATTERN,string) # pattern: chr2, pos2, chr1 , pos1
@@ -36,8 +36,8 @@ def max_read_counts(row):
     return int(max(sum([row[1], row[2]]), sum([row[4], row[5]])))
 
 def remove_duplicate(data):
-    data[COL_NAME[4]] = data.groupby(COL_NAME[:4])[COL_NAME[4]].transform(lambda x: ', '.join(map(str, x)))
-    data[COL_NAME[5]] = data.groupby(COL_NAME[:4])[COL_NAME[5]].transform(lambda x: ', '.join(map(str, x)))
+    data[COL_NAME[4]] = data.groupby(COL_NAME[:4])[COL_NAME[4]].transform(lambda x: ';'.join(map(str, x)))
+    data[COL_NAME[5]] = data.groupby(COL_NAME[:4])[COL_NAME[5]].transform(lambda x: ';'.join(map(str, x)))
 
     return data.drop_duplicates(subset=COL_NAME[:4], keep='first')
 
