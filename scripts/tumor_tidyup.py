@@ -19,9 +19,9 @@ def path(*args : str) -> str:
     return "/".join(args)
 
 def get_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="Normal_Pooling.py",description="Pooling Normal ITD data")
+    parser = argparse.ArgumentParser(prog="tumor_tidyup.py",description="making tumor itd list into more readable format")
     parser.add_argument('-t', '--TumorType', required=True, help='Tumor Type')
-    parser.add_argument('-s', '--SampleSheet', required=True, help="Normal Sample Sheet")
+    parser.add_argument('-s', '--SampleSheet', required=True, help="Tumor Sample Sheet")
     parser.add_argument('-g', '--genomonITD_dir', required=True, help="path to the directory of genomon-ITD result")
     parser.add_argument('-o', '--output_dir', required=False, default="./", help="the output directory, default is the running directory")
     parser.add_argument('-V', '--Version', action='version', version=VERSION, help="print out the Version of this program and exit")
@@ -81,7 +81,7 @@ Output Directory        : {output_dir}
         this_data = this_data[COL_NAME[:5]]
         this_data["sample_ID"] = sample
         this_data["max_read_counts"]= this_sample.apply(lambda row: max_read_counts(row), axis=1)
-        other_data = pd.DataFrame(this_data[:,DATA_ORDER], columns=COL_NAME[7:15])
+        other_data = pd.DataFrame(this_sample.iloc[:,DATA_ORDER], columns=COL_NAME[7:15])
         this_data = pd.concat([this_data, other_data], ignore_index=True)
         this_data["in_normal"] = 0
         this_data["in_pindel"] = 0
