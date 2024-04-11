@@ -64,7 +64,7 @@ Output Directory        : {output_dir}
 {'-'*20}\n
 """)
         
-    tumor_samples = list(pd.read_csv(sample_sheet, index_col = None)["File ID"])
+    tumor_samples = list(pd.read_table(sample_sheet, index_col = None)["File ID"])
     
 
     for sample in tumor_samples:
