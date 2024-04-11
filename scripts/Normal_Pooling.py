@@ -36,8 +36,6 @@ def max_read_counts(row):
     return int(max(sum([row[1], row[2]]), sum([row[4], row[5]])))
 
 def remove_duplicate(data):
-    print(COL_NAME[4])
-    print(COL_NAME[5])
     data[COL_NAME[4]] = data.groupby(COL_NAME[:4])[COL_NAME[4]].transform(lambda x: ', '.join(map(str, x)))
     data[COL_NAME[5]] = data.groupby(COL_NAME[:4])[COL_NAME[5]].transform(lambda x: ', '.join(map(str, x)))
 
