@@ -52,7 +52,7 @@ class PindelObject():
 
     def read(self) -> None:
         self.set_vcf_header()
-        self.raw = pd.concat([self.read_vcf(self.SI_path), self.read_vcf(self.TD_path)])
+        self.raw = pd.concat([self.read_vcf(self.SI_path), self.read_vcf(self.TD_path)]).reset_index(drop=True)
         self.tidy = self.vcf_tidyup(self.raw)
 
     def splitPindelDict(self,data: pd.DataFrame) -> dict[pd.DataFrame]:
@@ -85,18 +85,19 @@ class PindelObject():
 
     def vcf_tidyup(self, vcf: pd.DataFrame) -> None:
         def TransformINFO(information: str) -> list:
-            this_list = re.findall('[^=;]+=([^=;]+)', information) 
+        
+            this_list = re.findall(r'[^=;]+=([^=;]+)', information) 
             this_list.pop(1) # remove HOMLEN 
             return this_list
 
         def TransformCounts(CountsInfo: str) -> int:
-            return int(re.search('(?<=:)\d+,\d+', CountsInfo).group().split(",")[1])
+            return int(re.search('(?<=:)-?\d+,-?\d+', CountsInfo).group().split(",")[1])
 
-        tidy_vcf  = pd.DataFrame(vcf["INFO"].map(TransformINFO), columns=TIDY_COLNAME[3:6]) # "End Position", "Length", "SV_Type", "HOMSeq"
-        tidy_vcf = pd.DataFrame(vcf[VCF_COLNAME[:3]], columns=TIDY_COLNAME[:3]).merge(tidy_vcf, left_index=True, right_index=True) #CHROM", "Start Position", "ALT", 
-        tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'END'] += tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'LENGTH']
+        tidy_vcf  = pd.DataFrame(vcf["INFO"].map(TransformINFO).to_list(), columns=TIDY_COLNAME[3:7]) # "End Position", "Length", "SV_Type", "HOMSeq"
+        tidy_vcf = pd.DataFrame(vcf[["CHROM","POS","ALT"]]).merge(tidy_vcf, left_index=True, right_index=True) #CHROM", "Start Position", "ALT",
+        tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'End Position'] += tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'Length']
         tidy_vcf["Read_Counts"] = vcf["SAMPLE"].map(TransformCounts)
-
+        tidy_vcf.columns = TIDY_COLNAME
         return tidy_vcf
 
     def vcf_append(self, row: pd.Series):
@@ -140,30 +141,30 @@ Output Directory        : {output_dir}
         g_data = initiatePindel(pd.read_csv(path(tumor_dir,sample+"_tidy.csv"), header=0, index_col=None))
         Pindel = PindelObject(pindel_dir, sample)
 
-        for g_row in g_data.iterrows():
-            chr, s_pos, e_pos, seq = g_row["chromosome1", "position1", "position2", "observed_inserted_nucleotide"]
+        for _, g_row in g_data.iterrows():
+            chrom, s_pos, e_pos, seq = g_row[["chromosome1", "position1", "position2", "observed_inserted_nucleotide"]]
 
-            if chr in Pindel.tidyDict:
-                thisChrPindel: pd.DataFrame = Pindel.tidyDict[chr]
-                thisChrRaw: pd.DataFrame = Pindel.rawDict[chr]
+            if chrom in Pindel.tidyDict:
+                thisChrPindel: pd.DataFrame = Pindel.tidyDict[chrom]
+                thisChrRaw: pd.DataFrame = Pindel.rawDict[chrom]
             else:
                 continue
 
-            for p_row in thisChrPindel.iterrows():
-                start_diff: int = abs(p_row["Start Position"]-s_pos)
-                end_diff: int =  abs(p_row["End Position"]-e_pos)
+            for i, p_row in thisChrPindel.iterrows():
+                start_diff: int = abs(int(p_row["Start Position"])-int(s_pos))
+                end_diff: int =  abs(int(p_row["End Position"])-int(e_pos))
                 if start_diff<= THRESHOLD and end_diff<= THRESHOLD:
                     g_row["Pindel"] = 1
                     g_row["Pindel_SV_type"] = p_row["SV_Type"]
-                    g_row["Pindel_chr"] = chr
+                    g_row["Pindel_chr"] = chrom
                     g_row["Pindel_s_pos"] = p_row["Start Position"]
-                    g_row["Pindel_e_pos"] = p_row["End Position"]-e_pos
+                    g_row["Pindel_e_pos"] = p_row["End Position"]
                     g_row["min_diff"] = max(start_diff, end_diff)
                     g_row["Sequence"] = p_row["ALT"][-1::-1]
                     g_row["Pindel_read_counts"] = p_row["Read_Counts"]
                     g_row["Pindel_length"] = p_row["Length"]
 
-                    Pindel.vcf_append(p_row)
+                    Pindel.vcf_append(thisChrRaw.iloc[i])
                     break
         
         file_name = path(output_dir, sample+".pindel.csv")
