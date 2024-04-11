@@ -12,7 +12,7 @@ COL_NAME: list[str] = ["tumor_type", "chromosome1", "position1", "chromosome2", 
                        "sample_ID", "max_read_counts", "grade", 
                        "RefSeq_gene_Exon", "RefSeq_gene_Intron", "Ensembl_gene",
                        "assembled_contig_sequence", "observed_inserted_nucleotide",
-                       "OIN_length", "PDN_length", "in_normal", "in_pindel"]
+                       "OIN_length", "PDN_length", "in_normal"]
 DATA_ORDER: list[int] = [34,22,23,28,10,15,16,17]
 
 def path(*args : str) -> str:
@@ -85,7 +85,6 @@ Output Directory        : {output_dir}
         other_data.columns=COL_NAME[7:15]
         this_data = this_data.merge(other_data, left_index= True, right_index = True)
         this_data["in_normal"] = 0
-        this_data["in_pindel"] = 0
         this_data = this_data.sort_values("chromosome1", key=natsort_keygen(), ascending=True)
         this_data.to_csv(f"{output_dir}/{sample}_tidy.csv", index=None)
 
