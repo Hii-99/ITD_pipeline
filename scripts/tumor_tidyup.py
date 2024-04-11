@@ -5,15 +5,20 @@ import re
 from natsort import natsort_keygen
 from template.banner import wanglab_banner
 
-VERSION: str="0.1.1"
+VERSION: str="0.1.0"
 
 POSITION_PATTERN = "([a-zA-Z0-9_]+):\\+([0-9]+)-([a-zA-Z0-9_]+):\\-([a-zA-Z0-9]+)"
-COL_NAME: list[str] = ["chromosome1", "position1", "chromosome2", "position2", "max_read_counts", "sample_ID"]
+COL_NAME: list[str] = ["tumor_type", "chromosome1", "position1", "chromosome2", "position2", 
+                       "sample_ID", "max_read_counts", "grade", 
+                       "RefSeq_gene_Exon", "RefSeq_gene_Intron", "Ensembl_gene",
+                       "assembled_contig_sequence", "observed_inserted_nucleotide",
+                       "OIN_length", "PDN_length", "in_normal", "in_pindel"]
+DATA_ORDER: list[int] = [34,22,23,28,10,15,16,17]
 
-def path(*args : str):
+def path(*args : str) -> str:
     return "/".join(args)
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="Normal_Pooling.py",description="Pooling Normal ITD data")
     parser.add_argument('-t', '--TumorType', required=True, help='Tumor Type')
     parser.add_argument('-s', '--SampleSheet', required=True, help="Normal Sample Sheet")
@@ -23,23 +28,19 @@ def get_parser():
     parser.add_argument('-v', '--verbose', action='store_true', required=False, default=False, help="turn on the verbosity of this program")
     return parser
 
-def extract_position(data: pd.DataFrame):
+def extract_position(data: pd.DataFrame) -> pd.DataFrame:
     positions = data.iloc[:,0].map(apply_position_regex).to_list() 
-    return pd.DataFrame(positions, columns=COL_NAME[:4])
+    return pd.DataFrame(positions, columns=COL_NAME[1:5])
 
-def apply_position_regex(string: str):
+def apply_position_regex(string: str) -> list[str]:
     result = re.match(POSITION_PATTERN,string) # pattern: chr2, pos2, chr1 , pos1
     return result.group(3), result.group(4), result.group(1), result.group(2) 
 
-def max_read_counts(row):
+def max_read_counts(row) -> int:
     return int(max(sum([row[1], row[2]]), sum([row[4], row[5]])))
 
-def remove_duplicate(data):
-    data[COL_NAME[4]] = data.groupby(COL_NAME[:4])[COL_NAME[4]].transform(lambda x: ';'.join(map(str, x)))
-    data[COL_NAME[5]] = data.groupby(COL_NAME[:4])[COL_NAME[5]].transform(lambda x: ';'.join(map(str, x)))
-
-    return data.drop_duplicates(subset=COL_NAME[:4], keep='first')
-
+def get_grade(data: pd.DataFrame) -> pd.DataFrame:
+    pass
 
 if __name__ == '__main__':
     parser = get_parser()
@@ -47,7 +48,7 @@ if __name__ == '__main__':
 
     tumor_type = args.TumorType
     sample_sheet = args.SampleSheet
-    normal_dir = args.genomonITD_dir
+    tumor_dir = args.genomonITD_dir
     output_dir = args.output_dir
     verbose = args.verbose
  
@@ -58,32 +59,37 @@ if __name__ == '__main__':
 {'-'*20}
 Tumor Type              : {tumor_type}
 Sample Sheet            : {sample_sheet}
-Normal Sample Directory : {normal_dir}
+Tumor Sample Directory : {tumor_dir}
 Output Directory        : {output_dir}
 {'-'*20}\n
 """)
         
-    normal_samples = list(pd.read_csv(sample_sheet, index_col = None)["File ID"])
+    tumor_samples = list(pd.read_csv(sample_sheet, index_col = None)["File ID"])
     
-    data = pd.DataFrame(columns=COL_NAME)
 
-    for sample in normal_samples:
-        this_file = path(normal_dir,sample+"_itd_list.tsv")
+    for sample in tumor_samples:
+        this_file = path(tumor_dir,sample+"_itd_list.tsv")
         
         if (os.path.exists(this_file)) and (os.path.getsize(this_file) != 0):
             this_sample = pd.read_table(this_file, header=None, index_col=None)
         else:
             print(f"{this_file} is not exists or has size of zero !!!")
             continue
-        
-        this_data = extract_position(this_sample)
-        this_data["max_read_counts"]= this_sample.apply(lambda row: max_read_counts(row), axis=1)
+    
+        this_data = extract_position(this_sample)   
+        this_data["tumor_type"] = tumor_type
+        this_data = this_data[COL_NAME[:5]]
         this_data["sample_ID"] = sample
-        data = pd.concat([data,this_data], ignore_index=True)
-    
-    data = remove_duplicate(data.sort_values(by="chromosome1", key=natsort_keygen(), ascending=True)).reset_index(drop=True)
+        this_data["max_read_counts"]= this_sample.apply(lambda row: max_read_counts(row), axis=1)
+        other_data = pd.DataFrame(this_data[:,DATA_ORDER], columns=COL_NAME[7:15])
+        this_data = pd.concat([this_data, other_data], ignore_index=True)
+        this_data["in_normal"] = 0
+        this_data["in_pindel"] = 0
 
-    for chromosome in set(data.chromosome1):
-        data[data.chromosome1 == chromosome].to_csv(f"{output_dir}/{tumor_type}_Normal_Candidate_{chromosome}.csv")
+        this_data = this_data.sort_values("chromosome1", key=natsort_keygen(), ascending=True)
+        this_data.to_csv(f"{output_dir}/{sample}_tidy.csv", index=None)
+
+
     
-    data.to_csv(f"{output_dir}/{tumor_type}_Normal_Candidate.csv")
+
+    
