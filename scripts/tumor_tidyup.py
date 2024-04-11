@@ -5,7 +5,7 @@ import re
 from natsort import natsort_keygen
 from template.banner import wanglab_banner
 
-VERSION: str="0.1.0"
+VERSION: str="0.1.1"
 
 POSITION_PATTERN = "([a-zA-Z0-9_]+):\\+([0-9]+)-([a-zA-Z0-9_]+):\\-([a-zA-Z0-9]+)"
 COL_NAME: list[str] = ["tumor_type", "chromosome1", "position1", "chromosome2", "position2", 
@@ -81,11 +81,11 @@ Output Directory        : {output_dir}
         this_data = this_data[COL_NAME[:5]]
         this_data["sample_ID"] = sample
         this_data["max_read_counts"]= this_sample.apply(lambda row: max_read_counts(row), axis=1)
-        other_data = pd.DataFrame(this_sample.iloc[:,DATA_ORDER], columns=COL_NAME[7:15])
-        this_data = pd.concat([this_data, other_data], ignore_index=True)
+        other_data = this_sample.iloc[:,DATA_ORDER]
+        other_data.columns=COL_NAME[7:15]
+        this_data = this_data.merge(other_data, left_index= True, right_index = True)
         this_data["in_normal"] = 0
         this_data["in_pindel"] = 0
-
         this_data = this_data.sort_values("chromosome1", key=natsort_keygen(), ascending=True)
         this_data.to_csv(f"{output_dir}/{sample}_tidy.csv", index=None)
 
