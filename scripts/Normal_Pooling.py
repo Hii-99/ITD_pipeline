@@ -26,7 +26,7 @@ def get_parser():
 
 def extract_position(data: pd.DataFrame):
     positions = data.iloc[:,0].map(apply_position_regex).to_list() 
-    return pd.DataFrame(positions, columns=COL_NAME[:4])
+    return pd.DataFrame(positions, columns=COL_NAME[:4])!l
 
 def apply_position_regex(string: str):
     result = re.match(POSITION_PATTERN,string) # pattern: chr2, pos2, chr1 , pos1
