@@ -8,7 +8,7 @@ from template.banner import wanglab_banner
 
 VERSION: str="0.1.1"
 
-POSITION_PATTERN = r"([a-zA-Z0-9_]+):\\+([0-9]+)-([a-zA-Z0-9_]+):\\-([a-zA-Z0-9]+)"
+POSITION_PATTERN = "([a-zA-Z0-9_]+):\\+([0-9]+)-([a-zA-Z0-9_]+):\\-([a-zA-Z0-9]+)"
 COL_NAME: list[str] = ["chromosome1", "position1", "chromosome2", "position2", "max_read_counts", "sample_ID"]
 
 def path(*args : str):
