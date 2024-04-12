@@ -163,8 +163,7 @@ Output Directory        : {output_dir}
                     g_data.loc[i,"Sequence"] = p_row["ALT"][-1::-1]
                     g_data.loc[i,"Pindel_read_counts"] = p_row["Read_Counts"]
                     g_data.loc[i,"Pindel_length"] = p_row["Length"]
-
-                    Pindel.vcf_append(thisChrRaw.iloc[j])
+                    Pindel.vcf_append(thisChrRaw.loc[j])
                     break
         
         file_name = path(output_dir, sample+".pindel.csv")
