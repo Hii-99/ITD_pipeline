@@ -86,7 +86,7 @@ class PindelObject():
     def vcf_tidyup(self, vcf: pd.DataFrame) -> None:
         def TransformINFO(information: str) -> list:
         
-            variant_dict =dict(re.findall(r'[^=;]+=([^=;]+)', information))
+            variant_dict =dict(re.findall(r'([^=;]+)=([^=;]+)', information))
             variant_dict.setdefault("HOMSEQ", "nan")
             keys_to_list = ["END", "SVLEN", "SVTYPE", "HOMSEQ"]
             
