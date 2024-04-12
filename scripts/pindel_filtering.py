@@ -87,8 +87,9 @@ class PindelObject():
         def TransformINFO(information: str) -> list:
         
             variant_dict =dict(re.findall(r'(\w+)=(\w+)', information))
+            variant_dict.setdefault("HOMSEQ", "nan")
             keys_to_list = ["END", "SVLEN", "SVTYPE", "HOMSEQ"]
-
+            
             return [variant_dict[key] for key in keys_to_list]
 
         def TransformCounts(CountsInfo: str) -> int:
