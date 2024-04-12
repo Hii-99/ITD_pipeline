@@ -97,7 +97,7 @@ class PindelObject():
 
         tidy_vcf  = pd.DataFrame(vcf["INFO"].map(TransformINFO).to_list(), columns=TIDY_COLNAME[3:7]) # "End Position", "Length", "SV_Type", "HOMSeq"
         tidy_vcf = pd.DataFrame(vcf[["CHROM","POS","ALT"]]).merge(tidy_vcf, left_index=True, right_index=True) #CHROM", "Start Position", "ALT",
-        tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'End Position'] = tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'POS'] + tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'Length']
+        tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'End Position'] = tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'POS'].astype(int) + tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'Length'].astype(int)
         tidy_vcf["Read_Counts"] = vcf["SAMPLE"].map(TransformCounts)
         tidy_vcf.columns = TIDY_COLNAME
         return tidy_vcf
