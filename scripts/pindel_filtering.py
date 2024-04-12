@@ -86,16 +86,17 @@ class PindelObject():
     def vcf_tidyup(self, vcf: pd.DataFrame) -> None:
         def TransformINFO(information: str) -> list:
         
-            this_list = re.findall(r'[^=;]+=([^=;]+)', information) 
-            this_list.pop(1) # remove HOMLEN 
-            return this_list
+            variant_dict =dict(re.findall(r'(\w+)=(\w+)', variant_info))
+            keys_to_list = ["END", "SVLEN", "SVTYPE", "HOMSEQ"]
+
+            return [variant_dict[key] for key in keys_to_list]
 
         def TransformCounts(CountsInfo: str) -> int:
             return int(re.search('(?<=:)-?\d+,-?\d+', CountsInfo).group().split(",")[1])
 
         tidy_vcf  = pd.DataFrame(vcf["INFO"].map(TransformINFO).to_list(), columns=TIDY_COLNAME[3:7]) # "End Position", "Length", "SV_Type", "HOMSeq"
         tidy_vcf = pd.DataFrame(vcf[["CHROM","POS","ALT"]]).merge(tidy_vcf, left_index=True, right_index=True) #CHROM", "Start Position", "ALT",
-        tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'End Position'] += tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'Length']
+        tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'End Position'] = tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'POS'] + tidy_vcf.loc[tidy_vcf['SV_Type'] == 'INS', 'Length']
         tidy_vcf["Read_Counts"] = vcf["SAMPLE"].map(TransformCounts)
         tidy_vcf.columns = TIDY_COLNAME
         return tidy_vcf
@@ -153,7 +154,7 @@ Output Directory        : {output_dir}
             for j, p_row in thisChrPindel.iterrows():
                 start_diff: int = abs(int(p_row["Start Position"])-int(s_pos))
                 end_diff: int =  abs(int(p_row["End Position"])-int(e_pos))
-                if start_diff<= THRESHOLD and end_diff<= THRESHOLD:
+                if start_diff <= THRESHOLD and end_diff <= THRESHOLD:
                     g_data.loc[i,"Pindel"] = 1
                     g_data.loc[i,"Pindel_SV_type"] = p_row["SV_Type"]
                     g_data.loc[i,"Pindel_chr"] = chrom
