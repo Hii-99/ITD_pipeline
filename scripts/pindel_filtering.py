@@ -164,7 +164,7 @@ Output Directory        : {output_dir}
                     g_data.loc[i,"min_diff"] = max(start_diff, end_diff)
                     g_data.loc[i,"Sequence"] = p_row["ALT"][-1::-1]
                     g_data.loc[i,"Pindel_read_counts"] = p_row["Read_Counts"]
-                    g_data.loc[i,"Pindel_length"] = p_row["Length"].astype(int)
+                    g_data.loc[i,"Pindel_length"] = int(p_row["Length"])
 
                     Pindel.vcf_append(thisChrRaw.loc[j])
                     break
