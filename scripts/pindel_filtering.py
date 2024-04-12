@@ -86,7 +86,7 @@ class PindelObject():
     def vcf_tidyup(self, vcf: pd.DataFrame) -> None:
         def TransformINFO(information: str) -> list:
         
-            variant_dict =dict(re.findall(r'(\w+)=(\w+)', information))
+            variant_dict =dict(re.findall(r'[^=;]+=([^=;]+)', information))
             variant_dict.setdefault("HOMSEQ", "nan")
             keys_to_list = ["END", "SVLEN", "SVTYPE", "HOMSEQ"]
             
@@ -164,9 +164,9 @@ Output Directory        : {output_dir}
                     g_data.loc[i,"min_diff"] = max(start_diff, end_diff)
                     g_data.loc[i,"Sequence"] = p_row["ALT"][-1::-1]
                     g_data.loc[i,"Pindel_read_counts"] = p_row["Read_Counts"]
-                    g_data.loc[i,"Pindel_length"] = p_row["Length"]
+                    g_data.loc[i,"Pindel_length"] = p_row["Length"].astype(int)
 
-                    Pindel.vcf_append(thisChrRaw.iloc[j])
+                    Pindel.vcf_append(thisChrRaw.loc[j])
                     break
         
         file_name = path(output_dir, sample+".pindel.csv")
