@@ -38,7 +38,7 @@ def get_base(chromosome, position):
     return GENOME[chromosome][position - 1]
 
 def get_INFO(row):
-    return f"END={row['position2']};SVLEN={row['OIN_length']};SVTYPE=DUP:TANDEM"
+    return f"END={row['position2']};SVLEN={row['PDN_length']};SVTYPE=DUP:TANDEM"
 
 if __name__ == '__main__':
     parser = get_parser()
@@ -57,7 +57,7 @@ Output Directory        : {output_dir}
 """)
     
     ITD_data = pd.read_csv(ITD_dir, index_col = None)
-    ITD_data = ITD_data[ITD_data["in_normal" == 0]]
+    ITD_data = ITD_data[ITD_data["in_normal"] == 0]
 
     tumor_type: str = ITD_data["tumor_type"][0]
     samples = ITD_data["sample_id"].unique()
@@ -68,7 +68,7 @@ Output Directory        : {output_dir}
         this_vcf.columns = ['#CHROM', 'POS']
         this_vcf["ID"] = '.'
         this_vcf["REF"] = this_vcf.apply(lambda row: get_base(row['#CHROM'], row['POS']), axis=1)
-        this_vcf["ALT"] = this_vcf["REF"] + this_data["observed_inserted_nucleotide"]*2
+        this_vcf["ALT"] = this_vcf["REF"].astype(str) + this_data["observed_inserted_nucleotide"]*2
         this_vcf["QUAL"] = '.'
         this_vcf["FILTER"] = '.'
         this_vcf["INFO"] = this_data.apply(get_INFO, axis=1)
