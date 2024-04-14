@@ -65,13 +65,13 @@ fi
 
 conda activate $VEP_ENV
 
-input_vcf=${PREFIX}/${FILE_ID}.pindel.vcf
-output_vcf=${OUT_DIR}/${FILE_ID}.pindel.vep103.vcf
-DIR_CACHE=~/bin/vep #vep lib
+input_vcf=${VCF_DIR}/${FILE_NAME}.pindel.vcf
+output_vcf=${OUT_DIR}/${FILE_NAME}.pindel.vep103.vcf
+DIR_CACHE=/home/data/database/vep #vep lib
 CACHE_VERSION=103
 ASSEMBLY=GRCh38
 THREAD=10
-ASSEMBLY_FASTA=~/bin/gatk_index/Homo_sapiens_assembly38.fasta
+ASSEMBLY_FASTA=/home/data/data_thousand/gatk_index/Homo_sapiens_assembly38.fasta
 
 vep -i $input_vcf -o $output_vcf --vcf --cache --dir_cache $DIR_CACHE --cache_version $CACHE_VERSION \
 --assembly $ASSEMBLY --force_overwrite --fork $THREAD --offline --no_stats --everything -pick \
