@@ -19,7 +19,7 @@ def path(*args : str) -> str:
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="pindel_filtering.py",description="using pindel SI and TD result to identify ITD candidate")
-    parser.add_argument('-s', '--SampleSheet', required=True, help="Tumor Sample Sheet")
+    parser.add_argument('-s', '--file_name', required=True, help="the file ID of tumor sample")
     parser.add_argument('-g', '--genomonITD_dir', required=True, help="path to the directory of genomon-ITD result")
     parser.add_argument('-p', '--pindel_dir', required=True, help="path to the directory of genomon-ITD result")
     parser.add_argument('-o', '--output_dir', required=False, default="./", help="the output directory, default is the running directory")
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     parser = get_parser()
     args = parser.parse_args()
 
-    sample_sheet = args.SampleSheet
+    file_name = args.file_name
     tumor_dir = args.genomonITD_dir
     pindel_dir = args.pindel_dir
     output_dir = args.output_dir
@@ -130,47 +130,45 @@ if __name__ == '__main__':
         wanglab_banner()
         print(f"""
 {'-'*20}
-Sample Sheet            : {sample_sheet}
+File Name               : {file_name}
 Tumor Sample Directory  : {tumor_dir}
 Pindel Directory        : {pindel_dir}
 Output Directory        : {output_dir}
 {'-'*20}\n
 """)
     
-    samples = pd.read_table(sample_sheet, index_col = None)["File ID"].to_list()
 
-    for sample in samples:
-        g_data = initiatePindel(pd.read_csv(path(tumor_dir,sample+"_tidy.csv"), header=0, index_col=None))
-        Pindel = PindelObject(pindel_dir, sample)
+    g_data = initiatePindel(pd.read_csv(path(tumor_dir,file_name+"_tidy.csv"), header=0, index_col=None))
+    Pindel = PindelObject(pindel_dir, file_name)
 
-        for i, g_row in g_data.iterrows():
-            chrom, s_pos, e_pos, seq = g_row[["chromosome1", "position1", "position2", "observed_inserted_nucleotide"]]
+    for i, g_row in g_data.iterrows():
+        chrom, s_pos, e_pos, seq = g_row[["chromosome1", "position1", "position2", "observed_inserted_nucleotide"]]
 
-            if chrom in Pindel.tidyDict:
-                thisChrPindel: pd.DataFrame = Pindel.tidyDict[chrom]
-                thisChrRaw: pd.DataFrame = Pindel.rawDict[chrom]
-            else:
-                continue
+        if chrom in Pindel.tidyDict:
+            thisChrPindel: pd.DataFrame = Pindel.tidyDict[chrom]
+            thisChrRaw: pd.DataFrame = Pindel.rawDict[chrom]
+        else:
+            continue
 
-            for j, p_row in thisChrPindel.iterrows():
-                start_diff: int = abs(int(p_row["Start Position"])-int(s_pos))
-                end_diff: int =  abs(int(p_row["End Position"])-int(e_pos))
-                if start_diff <= THRESHOLD and end_diff <= THRESHOLD:
-                    g_data.loc[i,"Pindel"] = 1
-                    g_data.loc[i,"Pindel_SV_type"] = p_row["SV_Type"]
-                    g_data.loc[i,"Pindel_chr"] = chrom
-                    g_data.loc[i,"Pindel_s_pos"] = p_row["Start Position"]
-                    g_data.loc[i,"Pindel_e_pos"] = p_row["End Position"]
-                    g_data.loc[i,"min_diff"] = max(start_diff, end_diff)
-                    g_data.loc[i,"Sequence"] = p_row["ALT"][-1*int(p_row["Length"]):]
-                    g_data.loc[i,"Pindel_read_counts"] = p_row["Read_Counts"]
-                    g_data.loc[i,"Pindel_length"] = int(p_row["Length"])
-
+        for j, p_row in thisChrPindel.iterrows():
+            start_diff: int = abs(int(p_row["Start Position"])-int(s_pos))
+            end_diff: int =  abs(int(p_row["End Position"])-int(e_pos))
+            if start_diff <= THRESHOLD and end_diff <= THRESHOLD:
+                g_data.loc[i,"Pindel"] = 1
+                g_data.loc[i,"Pindel_SV_type"] = p_row["SV_Type"]
+                g_data.loc[i,"Pindel_chr"] = chrom
+                g_data.loc[i,"Pindel_s_pos"] = p_row["Start Position"]
+                g_data.loc[i,"Pindel_e_pos"] = p_row["End Position"]
+                g_data.loc[i,"min_diff"] = max(start_diff, end_diff)
+                g_data.loc[i,"Sequence"] = p_row["ALT"][-1*int(p_row["Length"]):]
+                g_data.loc[i,"Pindel_read_counts"] = p_row["Read_Counts"]
+                g_data.loc[i,"Pindel_length"] = int(p_row["Length"])
+                if g_row["in_normal"] == 1:
                     Pindel.vcf_append(thisChrRaw.loc[j])
-                    break
-        
-        file_name = path(output_dir, sample+".pindel.csv")
-        vcf_name = path(output_dir, sample+".pindel.vcf")
+                break
+    
+    itd_name = path(output_dir, file_name+".pindel.csv")
+    vcf_name = path(output_dir, file_name+".pindel.vcf")
 
-        g_data.to_csv(file_name, index=None)
-        Pindel.to_csv_mod(vcf_name)
+    g_data.to_csv(itd_name, index=None)
+    Pindel.to_csv_mod(vcf_name)

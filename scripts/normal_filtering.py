@@ -6,15 +6,15 @@ import re
 import argparse
 from template.banner import wanglab_banner
 
-VERSION: str="0.1.0"
+VERSION: str="0.1.1"
 THRESHOLD: int = 5
 
 def path(*args : str) -> str:
     return "/".join(args)
 
 def get_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="pindel_filtering.py",description="using pindel SI and TD result to identify ITD candidate")
-    parser.add_argument('-s', '--SampleSheet', required=True, help="Tumor Sample Sheet")
+    parser = argparse.ArgumentParser(prog="normal_filtering.py",description="using pooled normal candidate to filter tumor specific ITD")
+    parser.add_argument('-f', '--file_name', required=True, help="the file ID of tumor sample")
     parser.add_argument('-g', '--genomonITD_dir', required=True, help="path to the directory of genomon-ITD result")
     parser.add_argument('-n', '--normal_candidate', required=True, help="path to the Normal Candidate result")
     parser.add_argument('-o', '--output_dir', required=False, default="./", help="the output directory, default is the running directory")
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser = get_parser()
     args = parser.parse_args()
 
-    sample_sheet = args.SampleSheet
+    file_name = args.file_name
     tumor_dir = args.genomonITD_dir
     normal_candidate = args.normal_candidate
     output_dir = args.output_dir
@@ -62,16 +62,14 @@ if __name__ == '__main__':
         wanglab_banner()
         print(f"""
 {'-'*20}
-Sample Sheet            : {sample_sheet}
+File Name               : {file_name}
 Tumor Sample Directory  : {tumor_dir}
 Normal Candidate        : {normal_candidate}
 Output Directory        : {output_dir}
 {'-'*20}\n
 """)
         
-    samples = pd.read_table(sample_sheet, index_col = None)["File ID"].to_list()
-    for sample in samples:
-        g_data = pd.read_csv(path(tumor_dir,sample+"_tidy.csv"), header=0, index_col=None)
-        Normal_dict = split_normal(pd.read_csv(normal_candidate, index_col=None))
-        g_data["in_normal"] = g_data.apply(check_normal, axis=1, args=(Normal_dict,))
-        g_data.to_csv(path(output_dir, sample+".filtered.csv"))
+    g_data = pd.read_csv(path(tumor_dir,file_name+"_tidy.csv"), header=0, index_col=None)
+    Normal_dict = split_normal(pd.read_csv(normal_candidate, index_col=None))
+    g_data["in_normal"] = g_data.apply(check_normal, axis=1, args=(Normal_dict,))
+    g_data.to_csv(path(output_dir, file_name+".filtered.csv"))
