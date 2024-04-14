@@ -234,7 +234,7 @@ Output Directory        : {output_dir}
 {'-'*20}\n
 """)
         
-    vcf_file = path(pindel_dir, file_name + ".pindel.vep.vcf")
+    vcf_file = path(pindel_dir, file_name + ".pindel.vep103.vcf")
     with open(vcf_file) as f:
         vcf_lines = f.readlines()
         f.close()
