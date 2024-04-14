@@ -19,7 +19,7 @@ def path(*args : str) -> str:
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="pindel_filtering.py",description="using pindel SI and TD result to identify ITD candidate")
-    parser.add_argument('-s', '--file_name', required=True, help="the file ID of tumor sample")
+    parser.add_argument('-f', '--file_name', required=True, help="the file ID of tumor sample")
     parser.add_argument('-g', '--genomonITD_dir', required=True, help="path to the directory of genomon-ITD result")
     parser.add_argument('-p', '--pindel_dir', required=True, help="path to the directory of genomon-ITD result")
     parser.add_argument('-o', '--output_dir', required=False, default="./", help="the output directory, default is the running directory")
@@ -138,7 +138,7 @@ Output Directory        : {output_dir}
 """)
     
 
-    g_data = initiatePindel(pd.read_csv(path(tumor_dir,file_name+"_tidy.csv"), header=0, index_col=None))
+    g_data = initiatePindel(pd.read_csv(path(tumor_dir,file_name+".filtered.csv"), header=0, index_col=None))
     Pindel = PindelObject(pindel_dir, file_name)
 
     for i, g_row in g_data.iterrows():
@@ -163,7 +163,7 @@ Output Directory        : {output_dir}
                 g_data.loc[i,"Sequence"] = p_row["ALT"][-1*int(p_row["Length"]):]
                 g_data.loc[i,"Pindel_read_counts"] = p_row["Read_Counts"]
                 g_data.loc[i,"Pindel_length"] = int(p_row["Length"])
-                if g_row["in_normal"] == 1:
+                if g_row["in_normal"] == 0:
                     Pindel.vcf_append(thisChrRaw.loc[j])
                 break
     

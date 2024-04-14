@@ -9,6 +9,8 @@ shopt -s expand_aliases
 source $BASHRC
 source scripts/template/banner.sh
 
+eval "$(conda shell.bash hook)"
+
 PYTHON_ENV=python3.9
 VERSION=0.1.0
 SAMPLE_SHEET=unset
