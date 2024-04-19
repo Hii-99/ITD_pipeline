@@ -77,7 +77,7 @@ do
     
     FILE_NAME=${sample[0]}    
     TCGA_ID=${sample[6]}    
-
+    
     conda activate $VEP_ENV
     bash scripts/vep_annotation.sh \
         -f $FILE_NAME \
@@ -89,8 +89,6 @@ do
     conda activate $PYTHON_ENV
     python scripts/vep_vcf2maf.py -f $FILE_NAME \
         -t $TCGA_ID \
-        -p $PINDEL_DIR \
-        -o $OUT_DIR &
-    wait
-
+        -p $OUT_DIR \
+        -o $OUT_DIR
 done
